@@ -21,3 +21,7 @@ sudo apt-get install imagemagick
 ```bash
 git submodule update --init --recursive
 ```
+
+```bash
+rosrun image_transport republish compressed in:=/camera/rgb/image_raw _image_transport:=compressed raw out:=/camera/rgb/image_raw
+```
