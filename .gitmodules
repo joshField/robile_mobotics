@@ -1,0 +1,6 @@
+[submodule "src/apriltags_ros"]
+	path = src/apriltags_ros
+	url = https://github.com/RIVeR-Lab/apriltags_ros.git
+[submodule "src/turtlebot3"]
+	path = src/turtlebot3
+	url = https://github.com/ROBOTIS-GIT/turtlebot3.git
