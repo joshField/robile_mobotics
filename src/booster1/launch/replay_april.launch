@@ -2,7 +2,8 @@
     <arg name="path" default="$(find booster1)" />
     <arg name="bag" default="rosbag_PartIV_april_2020-11-17-17-56-15.bag"/>
     
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock $(arg path)/$(arg bag)"/>      
+    <node pkg="rosbag" type="play" name="player" args="-l --clock $(arg path)/$(arg bag)"/>      
 
     <include file="$(find booster1)/launch/april.launch" />
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find booster1)/rviz/replay.rviz" />
 </launch>

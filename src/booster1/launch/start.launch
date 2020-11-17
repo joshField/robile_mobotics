@@ -33,6 +33,6 @@
     <arg name="path" default="$(find booster1)" />
 
     <node pkg="rosbag" type="record" name="rosbag_PartIV_april"
-          args="record /camera/rgb/image_raw /tf /tf_static -o $(arg path)/rosbag_PartIV_april"/>
+          args="record /camera/rgb/image_raw /camera/rgb/camera_info /tf /tf_static -o $(arg path)/rosbag_PartIV_april"/>
 
 </launch>
