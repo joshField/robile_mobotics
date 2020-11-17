@@ -1,2 +1,0 @@
-booster1
--DCATKIN_DEVEL_PREFIX=/home/josh/Documents/NEU/MobileRobotics/robile_mobotics/devel -DCMAKE_INSTALL_PREFIX=/home/josh/Documents/NEU/MobileRobotics/robile_mobotics/install -G Unix Makefiles

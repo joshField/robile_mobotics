@@ -24,5 +24,20 @@
             <uri>model://cafe</uri>
             <pose>0 0 -0.1 0 0 0</pose>
         </include>
+
+        <include>
+            <uri>model://tag36h11img-001_out</uri>
+            <pose>-1.5 -11 0.1  0 0 1.57</pose>
+        </include>
+
+        <include>
+            <uri>model://tag36h11img-002_out</uri>
+            <pose>0 -11 0.1  0 0 1.57</pose>
+        </include>
+
+        <include>
+            <uri>model://tag36h11img-003_out</uri>
+            <pose>+1.5 -11 0.1  0 0 1.57</pose>
+        </include>
     </world>
 </sdf>

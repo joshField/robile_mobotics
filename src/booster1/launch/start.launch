@@ -14,4 +14,21 @@
         <arg name="world_name" value="$(arg world_name)"/>
         <arg name="verbose" value="True"/>
    </include>
+
+    <!-- load turtlebot3 model -->
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="multi_robot_name" default=""/>
+
+    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch">
+        <arg name="model" value="$(arg model)" />
+        <arg name="multi_robot_name" value="$(arg multi_robot_name)"/>
+    </include>
+
+    <node  name="spawn_gazebo_model"  pkg="gazebo_ros"  type="spawn_model"  args="-urdf -param   robot_description -model   robot -x   0 -y   0 -z   0 -R   0 -P   0 -Y   0"   respawn="false" output="screen" />
+
+    <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch">
+    </include>
+
+<node pkg="rosbag" type="record" name="rosbag_PartIV_april"
+       args="record -o /camera/rgb/image_raw"/>
 </launch>

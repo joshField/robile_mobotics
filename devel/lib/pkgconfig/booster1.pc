@@ -1,8 +1,0 @@
-prefix=/home/josh/Documents/NEU/MobileRobotics/robile_mobotics/devel
-
-Name: booster1
-Description: Description of booster1
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
