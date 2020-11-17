@@ -23,7 +23,4 @@
     </rosparam>
   </node>
 
-  <node pkg="rosbag" type="record" name="rosbag_PartIV_april"
-       args="record -o /camera/rgb/image_raw"/>
-
 </launch>
