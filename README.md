@@ -17,3 +17,7 @@ echo "export export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
 sudo apt install ros-noetic-turtlebot3-msgs ros-noetic-image-transport-plugins
 sudo apt-get install imagemagick
 ```
+
+```bash
+git submodule update --init --recursive
+```
