@@ -28,6 +28,8 @@
 
     <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch">
     </include>
+
+    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=/camera/rgb/image_raw compressed out:=/camera/rgb/image" />
     
     <!-- topic(s) bagging -o bag file name -->
     <arg name="path" default="$(find booster1)" />
