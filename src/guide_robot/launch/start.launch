@@ -1,0 +1,34 @@
+<launch>
+    <include file="$(find aws_robomaker_hospital_world)/launch/view_hospital.launch"/>
+
+    <!-- load turtlebot3 master model -->
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="robot_m" default="robot_m"/>
+    <arg name="robot_s" default="robot_s"/>
+
+    
+
+    <group ns="$(arg robot_m)">
+        <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch">
+            <arg name="model" value="$(arg model)" />
+            <arg name="multi_robot_name" value="$(arg robot_m)"/>
+        </include>
+
+        <node  name="spawn_gazebo_model"  pkg="gazebo_ros"  type="spawn_model"  args="-urdf -param   robot_description -robot_namespace $(arg robot_m) -model   $(arg robot_m) -x   0 -y   0 -z   0 -R   0 -P   0 -Y   0"   respawn="false" output="screen" />
+    </group>
+
+    <!-- load turtlebot3 slave model-->
+    <group ns="$(arg robot_s)">
+        <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch">
+            <arg name="model" value="$(arg model)" />
+            <arg name="multi_robot_name" value="$(arg robot_s)"/>
+        </include>
+
+        <node  name="spawn_gazebo_model"  pkg="gazebo_ros"  type="spawn_model"  args="-urdf -param   robot_description -robot_namespace $(arg robot_s) -model   $(arg robot_s) -x   1.0 -y   0 -z   0 -R   0 -P   0 -Y   0"   respawn="false" output="screen" />
+
+        <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch">
+        </include>
+    </group>
+
+    <!-- <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=/camera/rgb/image_raw compressed out:=/camera/rgb/image" /> -->
+</launch>

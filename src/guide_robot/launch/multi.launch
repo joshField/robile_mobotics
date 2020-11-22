@@ -1,0 +1,49 @@
+<launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="first_tb3"  default="robot_m"/>
+  <arg name="second_tb3" default="robot_s"/>
+
+  <arg name="first_tb3_x_pos" default=" 0.0"/>
+  <arg name="first_tb3_y_pos" default=" 0.0"/>
+  <arg name="first_tb3_z_pos" default=" 0.0"/>
+  <arg name="first_tb3_yaw"   default=" 0.0"/>
+
+  <arg name="second_tb3_x_pos" default=" 0.0"/>
+  <arg name="second_tb3_y_pos" default=" 1.0"/>
+  <arg name="second_tb3_z_pos" default=" 0.0"/>
+  <arg name="second_tb3_yaw"   default=" 0.0"/>
+
+  <!-- load hospital world -->
+  <include file="$(find aws_robomaker_hospital_world)/launch/view_hospital.launch"/>
+
+  <!-- load turtlebot3 master model -->
+  <group ns = "$(arg first_tb3)">
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find guide_robot)/urdf/robot.urdf.xacro namespace:=$(arg first_tb3)" />
+
+    
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_m" output="screen">
+      <remap from="robot_description" to="robot_description" />
+      <param name="publish_frequency" type="double" value="50.0" />
+      <!-- <param name="tf_prefix" value="$(arg first_tb3)" /> -->
+    </node>
+    
+  </group>
+
+  <node name="spawn_urdf_m" pkg="gazebo_ros" type="spawn_model" args="-urdf -model poop -x $(arg first_tb3_x_pos) -y $(arg first_tb3_y_pos) -z $(arg first_tb3_z_pos) -Y $(arg first_tb3_yaw) -param $(arg first_tb3)/robot_description -robot_namespace ''" />
+
+  
+
+  <!-- load turtlebot3 slave model -->
+  <group ns = "$(arg second_tb3)">
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find guide_robot)/urdf/robot.urdf.xacro namespace:=$(arg second_tb3)" />
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_s" output="screen">
+        <remap from="robot_description" to="robot_description" />
+        <param name="publish_frequency" type="double" value="50.0" />
+        <!-- <param name="tf_prefix" value="$(arg second_tb3)" /> -->
+    </node>
+  </group>
+
+  <node name="spawn_urdf_s" pkg="gazebo_ros" type="spawn_model" args="-urdf -model $(arg second_tb3) -x $(arg second_tb3_x_pos) -y $(arg second_tb3_y_pos) -z $(arg second_tb3_z_pos) -Y $(arg second_tb3_yaw) -param $(arg second_tb3)/robot_description -robot_namespace ''" />
+
+</launch>

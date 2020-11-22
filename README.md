@@ -21,3 +21,6 @@ sudo apt-get install imagemagick
 ```bash
 git submodule update --init --recursive
 ```
+
+## Resources
+[https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()
