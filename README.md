@@ -22,5 +22,10 @@ sudo apt-get install imagemagick
 git submodule update --init --recursive
 ```
 
+Additional ROS packages:  
+``` bash
+sudo apt install ros-noetic-gmapping ros-noetic-map-server ros-noetic-frontier-exploration ros-noetic-navigation-stage
+```
+
 ## Resources
 [https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()
