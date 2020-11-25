@@ -26,14 +26,14 @@ class JoyToTwist():
         x_axis = msg.axes[0]
         y_axis = msg.axes[1]
 
-        max_vel = 5.0
+        max_vel = 2.0
 
         x = max_vel * y_axis
-        y = max_vel * x_axis
+        yaw_rate = max_vel * x_axis
 
         vel = Twist()
         vel.linear.x = x
-        vel.linear.y = y
+        vel.angular.z = yaw_rate
 
         self.vel_pub.publish(vel)
 
