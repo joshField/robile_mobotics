@@ -14,8 +14,7 @@
   <arg name="robot_s_yaw"   default=" 0.0"/>
 
   <!-- load hospital world -->
-  <include file="$(find aws_robomaker_hospital_world)/launch/view_hospital.launch"/>
-
+  <include file="$(find guide_robot)/launch/hospital.launch"/>
 
   <!-- load turtlebot3 master model -->
   <include file="$(find guide_robot)/launch/spawn.launch">
@@ -28,6 +27,10 @@
   <group ns="$(arg robot_m)">
     <!-- Do the teleop thing -->
     <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch"/>
+
+    <!-- Do the april tag thing -->
+    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+    <include file="$(find guide_robot)/launch/april.launch"/>
   </group>
   
 
@@ -39,5 +42,12 @@
     <arg name="z" value="$(arg robot_s_z_pos)"/>
     <arg name="yaw" value="$(arg robot_s_yaw)"/>
   </include>
+  <group ns="$(arg robot_s)">
+
+    <!-- Do the april tag thing -->
+    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+    <include file="$(find guide_robot)/launch/april.launch"/>
+  </group>
+
 
 </launch>
