@@ -6,4 +6,4 @@
 	url = https://github.com/ROBOTIS-GIT/turtlebot3.git
 [submodule "src/aws-robomaker-hospital-world"]
 	path = src/aws-robomaker-hospital-world
-	url = git@github.com:aws-robotics/aws-robomaker-hospital-world.git
+	url = https://github.com/aws-robotics/aws-robomaker-hospital-world.git
