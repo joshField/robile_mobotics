@@ -13,7 +13,7 @@ cd ~/apriltag_gazebo_model_generator/ar_tags/scripts
 ```
 
 ```bash
-echo "export export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
+echo "export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
 sudo apt install ros-noetic-turtlebot3-msgs ros-noetic-image-transport-plugins
 sudo apt-get install imagemagick
 ```
@@ -22,9 +22,10 @@ sudo apt-get install imagemagick
 git submodule update --init --recursive
 ```
 
-Additional ROS packages:  
+Additional ROS packages:
+
 ``` bash
-sudo apt install ros-noetic-gmapping ros-noetic-map-server ros-noetic-frontier-exploration ros-noetic-navigation-stage
+sudo apt install ros-noetic-gmapping ros-noetic-map-server ros-noetic-amcl ros-noetic-move-base
 ```
 
 ## Resources
