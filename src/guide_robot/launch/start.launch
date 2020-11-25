@@ -12,5 +12,7 @@
         <arg name="set_base_frame" value="$(arg robot_m)/base_footprint"/>
         <arg name="set_odom_frame" value="$(arg robot_m)/odom"/>
     </include>
+
+    <!-- Do the rviz things -->
     <node name="rviz" type="rviz" pkg="rviz" args="-d $(find guide_robot)/rviz/full.rviz" />
 </launch>
