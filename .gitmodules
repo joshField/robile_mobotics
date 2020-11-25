@@ -7,3 +7,6 @@
 [submodule "src/aws-robomaker-hospital-world"]
 	path = src/aws-robomaker-hospital-world
 	url = https://github.com/aws-robotics/aws-robomaker-hospital-world.git
+[submodule "src/rqt_virtual_joystick"]
+	path = src/rqt_virtual_joystick
+	url = https://github.com/aquahika/rqt_virtual_joystick

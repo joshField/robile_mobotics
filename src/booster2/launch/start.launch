@@ -1,0 +1,33 @@
+<launch>
+!-- these are the arguments you can pass this launch file, for example paused:=true -->
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" default="false"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+    <arg name="world_name" default="$(find booster2)/worlds/collapsed_house.world"/>
+
+    <!-- launch the custom world -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="paused" value="False"/>
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="verbose" value="True"/>
+    </include>
+
+    <!-- load turtlebot3 model -->
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="multi_robot_name" default=""/>
+
+    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch">
+        <arg name="model" value="$(arg model)" />
+        <arg name="multi_robot_name" value="$(arg multi_robot_name)"/>
+    </include>
+
+    <node  name="spawn_gazebo_model"  pkg="gazebo_ros"  type="spawn_model"  args="-urdf -param   robot_description -model   robot -x   0 -y   0 -z   1 -R   0 -P   0 -Y   0"   respawn="false" output="screen" />
+
+    <!-- Launch the virtual joy -->
+    <node name="rqt_virtual_joy" pkg="rqt_virtual_joy" type="rqt_virtual_joy" output="screen"/>
+
+    <!-- Launch the joy to twist translator -->
+    <node name="joy_to_twist" pkg="booster2" type="joy_to_twist.py" output="screen"/>
+</launch>
