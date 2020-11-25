@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.6">
+    <world name="world">
+        <gravity>0 0 -9.8</gravity>
+        <physics default="0" name="default_physics" type="ode">
+            <max_step_size>0.001</max_step_size>
+            <real_time_factor>1</real_time_factor>
+            <real_time_update_rate>1000</real_time_update_rate>
+        </physics>
+        <scene>
+            <ambient>0.6 0.6 0.6 1</ambient>
+            <background>0.4 0.4 0.4 1</background>
+            <shadows>false</shadows>
+        </scene>
+        <include>
+            <uri>model://sun</uri>
+        </include>
+        <include>
+            <uri>model://ground_plane</uri>
+            <pose>0 0 -0.1 0 -0 0</pose>
+        </include>
+
+        <include>
+            <uri>model://cafe</uri>
+            <pose>0 0 -0.1 0 0 0</pose>
+        </include>
+
+        <include>
+            <uri>model://tag36h11img-001_out</uri>
+            <pose>-1.5 -11 0.1  0 0 1.57</pose>
+        </include>
+
+        <include>
+            <uri>model://tag36h11img-002_out</uri>
+            <pose>0 -11 0.1  0 0 1.57</pose>
+        </include>
+
+        <include>
+            <uri>model://tag36h11img-003_out</uri>
+            <pose>+1.5 -11 0.1  0 0 1.57</pose>
+        </include>
+    </world>
+</sdf>
