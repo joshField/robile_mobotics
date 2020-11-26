@@ -25,7 +25,7 @@ git submodule update --init --recursive
 Additional ROS packages:
 
 ``` bash
-sudo apt install ros-noetic-gmapping ros-noetic-map-server ros-noetic-amcl ros-noetic-move-base
+sudo apt install ros-noetic-gmapping ros-noetic-map-server ros-noetic-amcl ros-noetic-move-base ros-noetic-dwa-local-planner
 ```
 
 ## Resources
