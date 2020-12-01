@@ -28,5 +28,11 @@ Additional ROS packages:
 sudo apt install ros-noetic-gmapping ros-noetic-map-server ros-noetic-amcl ros-noetic-move-base ros-noetic-dwa-local-planner
 ```
 
+Add explore_lite but exclude multrobot_map_merge
+```
+catkin config --blacklist multirobot_map_merge
+```
+
+
 ## Resources
 [https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()

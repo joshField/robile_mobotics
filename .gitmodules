@@ -10,3 +10,6 @@
 [submodule "src/rqt_virtual_joystick"]
 	path = src/rqt_virtual_joystick
 	url = https://github.com/aquahika/rqt_virtual_joystick
+[submodule "src/m-explore"]
+	path = src/m-explore
+	url = https://github.com/hrnr/m-explore.git
