@@ -14,7 +14,7 @@ class RobotMaster():
         self.tag_detections_sub = rospy.Subscriber(
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.target_sub = rospy.Subscriber("/target", String, self.target_callback, queue_size=10)
-        self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAc)
+        self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.tag_dict = {}
 
     def tag_callback(self, msg):
@@ -46,6 +46,13 @@ class RobotMaster():
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose = goal_pose
 
+        self.action_client.send_goal(goal)
+        wait = self.action_client.wait_for_result()
+        if not wait:
+            rospy.logerr("Action server not available!")
+            rospy.signal_shutdown("Action server not available!")
+        else:
+            return selfclient.get_result()
 
 def main():
     master = RobotMaster()
