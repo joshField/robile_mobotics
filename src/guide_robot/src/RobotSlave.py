@@ -36,7 +36,7 @@ class RobotSlave():
         Args:
             msg (String): a Twist velocity command in a String
         """
-        
+
         v = json.loads(msg.data)
 
         vel_cmd = Twist()
