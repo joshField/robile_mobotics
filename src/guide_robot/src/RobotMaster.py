@@ -4,6 +4,9 @@ import actionlib
 from std_msgs.msg import String
 from apriltag_ros.msg import AprilTagDetection, AprilTagDetectionArray
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Twist
+import json
+import yaml
 
 
 class RobotMaster():
@@ -14,7 +17,14 @@ class RobotMaster():
         self.tag_detections_sub = rospy.Subscriber(
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.target_sub = rospy.Subscriber("/target", String, self.target_callback, queue_size=10)
+        self.vel_sub = rospy.Subscriber("cmd_vel", Twist, self.vel_callback, queue_size=10)
         self.action_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+        
+        x = rospy.get_param("home_x")
+        y = rospy.get_param("home_y")
+        z = rospy.get_param("home_z")
+        self.home = (x,y,z)
+        self.guidance_mode = False
         self.tag_dict = {}
 
     def tag_callback(self, msg):
@@ -53,6 +63,21 @@ class RobotMaster():
             rospy.signal_shutdown("Action server not available!")
         else:
             return selfclient.get_result()
+
+    def vel_callback(self, msg):
+        """
+        Listen on cmd_vel topic and republishes to the comm topic for the slave robot.vel_callback if in guidance mode.
+
+        Args:
+            msg (Twist): Velocity command
+        """
+
+        if self.guidance_mode: 
+            str_cmd = String()
+            data = yaml.load(str(msg))
+            str_cmd.data = json.dumps(data)
+            self.comm_pub.publish(str_cmd)
+
 
 def main():
     master = RobotMaster()

@@ -36,3 +36,5 @@ catkin config --blacklist multirobot_map_merge
 
 ## Resources
 [https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()
+[https://aws.amazon.com/blogs/robotics/hospital-world-simulating-robot/](AWS HospitalWorld Blog Post)
+[http://wiki.ros.org/navigation/Tutorials/RobotSetup](move_base params: ROS navigation wiki)

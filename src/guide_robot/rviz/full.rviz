@@ -8,6 +8,8 @@ Panels:
         - /Status1
         - /robot_m1
         - /robot_s1
+        - /Map2
+        - /Map3
       Splitter Ratio: 0.5
     Tree Height: 270
   - Class: rviz/Selection
@@ -255,6 +257,26 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /move_base/global_costmap/costmap
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /move_base/local_costmap/costmap
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -283,7 +305,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.60762095451355
+      Distance: 9.119898796081543
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -291,17 +313,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -1.206957221031189
-        Y: 1.1793590784072876
-        Z: 0.4006769359111786
+        X: -0.9138333797454834
+        Y: 1.6107958555221558
+        Z: 0.9313098788261414
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.10539866983890533
+      Pitch: 0.8603981733322144
       Target Frame: <Fixed Frame>
-      Yaw: 5.578577041625977
+      Yaw: 5.5985798835754395
     Saved: ~
 Window Geometry:
   Displays:

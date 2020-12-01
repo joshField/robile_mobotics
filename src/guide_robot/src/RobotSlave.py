@@ -2,6 +2,8 @@
 import rospy
 from std_msgs.msg import String
 from apriltag_ros.msg import AprilTagDetection, AprilTagDetectionArray
+from geometry_msgs.msg import Twist
+import json
 
 
 class RobotSlave():
@@ -12,6 +14,7 @@ class RobotSlave():
             "/comm", String, self.comm_callback, queue_size=10)
         self.tag_detections_sub = rospy.Subscriber(
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
+        self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
         self.tag_dict = {}
 
     def tag_callback(self, msg):
@@ -27,7 +30,25 @@ class RobotSlave():
             self.tag_dict[tag_id] = tag.pose
 
     def comm_callback(self, msg):
-        pass
+        """
+        Twist velocity command in the form of a String
+
+        Args:
+            msg (String): a Twist velocity command in a String
+        """
+        
+        v = json.loads(msg.data)
+
+        vel_cmd = Twist()
+        vel_cmd.linear.x = v["linear"]["x"]
+        vel_cmd.linear.y = v["linear"]["y"]
+        vel_cmd.linear.z = v["linear"]["z"]
+        vel_cmd.angular.x = v["angular"]["x"]
+        vel_cmd.angular.y = v["angular"]["y"]
+        vel_cmd.angular.z = v["angular"]["z"]
+
+        self.vel_pub.publish(vel_cmd)
+
 
 def main():
     slave = RobotSlave()
