@@ -29,7 +29,7 @@
         <arg name="initial_pose_a" default="0.0"/>
 
         <!-- AMCL -->
-        <!-- <node pkg="amcl" type="amcl" name="amcl">
+        <node pkg="amcl" type="amcl" name="amcl">
             <param name="min_particles"             value="500"/>
             <param name="max_particles"             value="3000"/>
             <param name="kld_err"                   value="0.02"/>
@@ -62,7 +62,7 @@
             <param name="odom_frame_id"             value="$(arg robot_name)/odom"/>
             <param name="base_frame_id"             value="$(arg robot_name)/base_footprint"/>
             <param name="use_map_topic"             value="true"/>
-        </node> -->
+        </node>
 
         <!-- move_base -->
         <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
