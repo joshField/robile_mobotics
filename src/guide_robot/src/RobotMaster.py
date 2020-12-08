@@ -44,25 +44,26 @@ class RobotMaster():
         When an SOI id is given the robot will navigate to the known position.
 
         Args:
-            msg (String): SOI id as a String
+            msg (String): SOI id as a String (ex. "0,1,2")
         """
-
-        tag_id = msg.data
-        goal_pose = self.tag_dict[tag_id]
+        sois = msg.data.split(",")
         
-        # send Nav 2D goal
-        goal = MoveBaseGoal()
-        goal.target_pose.header.frame_id = "map"
-        goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.pose = goal_pose
+        for tag_id in sois:
+            goal_pose = self.tag_dict[tag_id]
+            
+            # send Nav 2D goal
+            goal = MoveBaseGoal()
+            goal.target_pose.header.frame_id = "map"
+            goal.target_pose.header.stamp = rospy.Time.now()
+            goal.target_pose.pose = goal_pose
 
-        self.action_client.send_goal(goal)
-        wait = self.action_client.wait_for_result()
-        if not wait:
-            rospy.logerr("Action server not available!")
-            rospy.signal_shutdown("Action server not available!")
-        else:
-            return selfclient.get_result()
+            self.action_client.send_goal(goal)
+            wait = self.action_client.wait_for_result()
+            if not wait:
+                rospy.logerr("Action server not available!")
+                rospy.signal_shutdown("Action server not available!")
+            else:
+                return selfclient.get_result()
 
     def vel_callback(self, msg):
         """

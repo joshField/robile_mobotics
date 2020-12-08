@@ -26,7 +26,14 @@
   </include>
   <group ns="$(arg robot_m)">
     <!-- Do the teleop thing -->
-    <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch"/>
+    <node respawn="true" pkg="joy"
+            type="joy_node" name="turtle_joy" >
+        <param name="dev" type="string" value="/dev/input/js0" />
+        <param name="deadzone" value="0.12" />
+    </node>
+
+    <!-- Launch the joy to twist translator -->
+    <node name="joy_to_twist" pkg="booster2" type="joy_to_twist.py" output="screen"/>
 
     <!-- Do the april tag thing -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />

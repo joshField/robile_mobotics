@@ -78,7 +78,7 @@
             <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
         </node>
         <node pkg="explore_lite" type="explore" respawn="false" name="explore" output="screen">
-            <param name="robot_base_frame" value="$(arg robot_name)/base_link"/>
+            <param name="robot_base_frame" value="$(arg robot_name)/base_footprint"/>
             <param name="costmap_topic" value="map"/>
             <param name="costmap_updates_topic" value="map_updates"/>
             <param name="visualize" value="true"/>

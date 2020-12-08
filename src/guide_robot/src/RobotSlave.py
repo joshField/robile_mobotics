@@ -15,7 +15,7 @@ class RobotSlave():
         self.tag_detections_sub = rospy.Subscriber(
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
-        self.tag_dict = {}
+        self.guidance = False
 
     def tag_callback(self, msg):
         """
@@ -27,27 +27,36 @@ class RobotSlave():
 
         for tag in msg:
             tag_id = tag.id[0]
-            self.tag_dict[tag_id] = tag.pose
+
+            #TODO: follow tag if its the leader
+            if tag_id == "8" and self.guidance:
+                vel_cmd = Twist()
+
+                self.tag_dict[tag_id] = tag.pose
+
+                vel_cmd.linear.x = 
+                vel_cmd.linear.y = 0
+                vel_cmd.linear.z = 0
+
+                vel_cmd.angular.x = 0
+                vel_cmd.angular.y = 0
+                vel_cmd.angular.z = 
+
+                self.vel_cmd.publish(vel_cmd)
+                # self.rate.sleep()
 
     def comm_callback(self, msg):
         """
-        Twist velocity command in the form of a String
+        Comm callback to set guidance mode.
 
         Args:
-            msg (String): a Twist velocity command in a String
+            msg (String): a boolean ("True" or "False")
         """
 
-        v = json.loads(msg.data)
-
-        vel_cmd = Twist()
-        vel_cmd.linear.x = v["linear"]["x"]
-        vel_cmd.linear.y = v["linear"]["y"]
-        vel_cmd.linear.z = v["linear"]["z"]
-        vel_cmd.angular.x = v["angular"]["x"]
-        vel_cmd.angular.y = v["angular"]["y"]
-        vel_cmd.angular.z = v["angular"]["z"]
-
-        self.vel_pub.publish(vel_cmd)
+        if msg.data == "True":
+            self.guidance = True
+        else:
+            self.guidance = False
 
 
 def main():

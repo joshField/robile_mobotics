@@ -12,8 +12,8 @@ class JoyToTwist():
         rospy.init_node("joy_to_twist", log_level=rospy.INFO)
         rospy.loginfo("Started joy_to_twist node.")
 
-        self.vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-        self.joy_sub = rospy.Subscriber("/joy", Joy, self.joy_callback, queue_size=1)
+        self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
+        self.joy_sub = rospy.Subscriber("joy", Joy, self.joy_callback, queue_size=1)
 
     def joy_callback(self, msg):
         """
