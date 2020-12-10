@@ -26,11 +26,11 @@
   </include>
   <group ns="$(arg robot_m)">
     <!-- Do the teleop thing -->
-    <node respawn="true" pkg="joy"
+    <!-- <node respawn="true" pkg="joy"
             type="joy_node" name="turtle_joy" >
         <param name="dev" type="string" value="/dev/input/js0" />
         <param name="deadzone" value="0.12" />
-    </node>
+    </node> -->
 
     <!-- Launch the joy to twist translator -->
     <node name="joy_to_twist" pkg="booster2" type="joy_to_twist.py" output="screen"/>

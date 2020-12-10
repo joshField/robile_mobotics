@@ -19,10 +19,18 @@
   </joint>
 
   <!-- adding apriltag -->
-  
-  
-  <joint name="$(arg namespace)/aprilTag" type="fixed">
-      <parent link="$(arg namespace)/base_footprint"/>
+  <link name="$(arg namespace)/aprilTag"/>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.57 0"/>
+      <geometry>
+        <mesh filename="model://tag36h11img-008_out/meshes/tag36h11img-008_out.dae" scale="0.6 0.6 0.6"/>
+      </geometry>
+      <material name="dark"/>
+    </visual>
+
+  <joint name="$(arg namespace)/aprilTagJoint" type="fixed">
+      <parent link="$(arg namespace)/base_link"/>
+      <child link="$(arg namespace)/aprilTag" />
       <origin xyz="0 0 0.010" rpy="0 1.57 0"/>
    </joint>
 
