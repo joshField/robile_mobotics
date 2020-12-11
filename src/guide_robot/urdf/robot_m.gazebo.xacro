@@ -176,7 +176,7 @@
         <alwaysOn>true</alwaysOn>
         <updateRate>30.0</updateRate>
         <cameraName>camera</cameraName>
-        <frameName>$(arg namespace)/camera_rgb_optical_frame</frameName>
+        <frameName>camera_rgb_optical_frame</frameName>
         <imageTopicName>rgb/image_raw</imageTopicName>
         <depthImageTopicName>depth/image_raw</depthImageTopicName>
         <pointCloudTopicName>depth/points</pointCloudTopicName>

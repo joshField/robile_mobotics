@@ -32,8 +32,10 @@ Add explore_lite but exclude multrobot_map_merge
 ```
 catkin config --blacklist multirobot_map_merge
 ```
-
-
+To support pose to quaternion transforms in RobotMaster.py and RobotSlave.py with scipy:
+```
+pip3 install scipy
+```
 ## Resources
 [https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()
 [https://aws.amazon.com/blogs/robotics/hospital-world-simulating-robot/](AWS HospitalWorld Blog Post)

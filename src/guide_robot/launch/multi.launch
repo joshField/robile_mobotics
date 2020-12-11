@@ -37,9 +37,10 @@
 
     <!-- Do the april tag thing -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
-    <include file="$(find guide_robot)/launch/april.launch"/>
   </group>
-  
+  <include file="$(find guide_robot)/launch/april.launch">
+    <arg name="robot_name" value="$(arg robot_m)"/>
+  </include>
 
   <!-- load turtlebot3 slave model -->
   <include file="$(find guide_robot)/launch/spawn.launch">
@@ -53,8 +54,10 @@
 
     <!-- Do the april tag thing -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
-    <include file="$(find guide_robot)/launch/april.launch"/>
   </group>
+  <include file="$(find guide_robot)/launch/april.launch">
+    <arg name="robot_name" value="$(arg robot_s)"/>
+  </include>
 
 
 </launch>
