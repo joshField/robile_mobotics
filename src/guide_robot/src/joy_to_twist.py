@@ -12,8 +12,8 @@ class JoyToTwist():
         rospy.init_node("joy_to_twist", log_level=rospy.INFO)
         rospy.loginfo("Started joy_to_twist node.")
 
-        self.vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-        self.joy_sub = rospy.Subscriber("/joy", Joy, self.joy_callback, queue_size=1)
+        self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=1)
+        self.joy_sub = rospy.Subscriber("joy", Joy, self.joy_callback, queue_size=1)
 
     def joy_callback(self, msg):
         """
@@ -27,9 +27,10 @@ class JoyToTwist():
         y_axis = msg.axes[1]
 
         max_vel = 2.0
+        max_yaw_rate = 1.0
 
         x = max_vel * y_axis
-        yaw_rate = max_vel * x_axis
+        yaw_rate = max_yaw_rate * x_axis
 
         vel = Twist()
         vel.linear.x = x

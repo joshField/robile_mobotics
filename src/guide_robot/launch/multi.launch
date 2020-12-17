@@ -26,14 +26,14 @@
   </include>
   <group ns="$(arg robot_m)">
     <!-- Do the teleop thing -->
-    <!-- <node respawn="true" pkg="joy"
+    <node respawn="true" pkg="joy"
             type="joy_node" name="turtle_joy" >
         <param name="dev" type="string" value="/dev/input/js0" />
         <param name="deadzone" value="0.12" />
-    </node> -->
+    </node>
 
     <!-- Launch the joy to twist translator -->
-    <node name="joy_to_twist" pkg="booster2" type="joy_to_twist.py" output="screen"/>
+    <node name="joy_to_twist" pkg="guide_robot" type="joy_to_twist.py" output="screen"/>
 
     <!-- Do the april tag thing -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
@@ -51,7 +51,14 @@
     <arg name="yaw" value="$(arg robot_s_yaw)"/>
   </include>
   <group ns="$(arg robot_s)">
+    <node respawn="true" pkg="joy"
+            type="joy_node" name="turtle_joy" >
+        <param name="dev" type="string" value="/dev/input/js1" />
+        <param name="deadzone" value="0.12" />
+    </node>
 
+    <node name="joy_to_twist" pkg="guide_robot" type="joy_to_twist.py" output="screen"/>
+    
     <!-- Do the april tag thing -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
   </group>
