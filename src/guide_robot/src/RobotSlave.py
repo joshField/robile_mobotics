@@ -54,7 +54,7 @@ class RobotSlave():
                 self.lost = False
                 self.last_detection = rospy.get_time()
                 rospy.loginfo_throttle(5.0, "Following Master")
-                self.tag_follow(tag_id)
+                self.tag_follow(tag_id, max_dist_from_tag=5.0)
 
             #Goto target tag
             elif tag_id == self.target_id:
@@ -103,12 +103,13 @@ class RobotSlave():
 
         self.rate.sleep()
 
-    def tag_follow(self, tag_id):
+    def tag_follow(self, tag_id, max_dist_from_tag=10000):
         """
         Choose which tag to follow, used for having slave robts switch from following the master tag to the SOI tag.
 
         Args:
             tag_id (int): Identity of the tag we want to follow
+            max_dist_from_tag (int): 
         """
         vel_cmd = Twist()
 
@@ -122,6 +123,12 @@ class RobotSlave():
         
         #parse tag position
         dist = np.linalg.norm(pos)
+        
+        # consider the slave to be lost if too far away from master
+        if dist > max_dist_from_tag:
+            self.lost = True
+            return
+        
         maxDist = 5
         heading_error = np.arctan2(pos[1], pos[0]) #angle between plane of tag on m and the front plane of slave robot
 
