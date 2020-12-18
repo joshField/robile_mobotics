@@ -36,6 +36,21 @@ To support pose to quaternion transforms in RobotMaster.py and RobotSlave.py wit
 ```
 pip3 install scipy
 ```
+
+## Running
+
+Send master to target:
+
+``` bash
+rostopic pub /target std_msgs/String "data: '1'"
+```
+
+Multiple robot following to an SOI:
+
+``` bash
+rostopic pub /follow std_msgs/String "data: '0,0 1,0'"
+```
+
 ## Resources
 [https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()
 [https://aws.amazon.com/blogs/robotics/hospital-world-simulating-robot/](AWS HospitalWorld Blog Post)

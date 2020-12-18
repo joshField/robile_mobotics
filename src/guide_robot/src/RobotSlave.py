@@ -24,12 +24,13 @@ class RobotSlave():
         self.tag_detections_sub = rospy.Subscriber(
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
-        self.guidance = True
+        self.guidance = False
         self.lost = False
         self.target_id = None
         self.MAX_lin_VEL = 1.00                         #set max follow velocity
         self.last_detection = rospy.get_time()
-        self.id = 0  # TODO: Implement ROS param for getting this and passing from launch file
+        self.id = rospy.get_param("~id", 0)
+        rospy.loginfo(f"Slave {self.id} started")
         self.kP = 0.5 #PID gains for angular velocity controller
         self.kI = 0.0
         self.kD = 0.01
@@ -54,15 +55,18 @@ class RobotSlave():
                 self.lost = False
                 self.last_detection = rospy.get_time()
                 rospy.loginfo_throttle(5.0, "Following Master")
-                self.tag_follow(tag_id, max_dist_from_tag=5.0)
+                self.tag_follow(tag_id)
 
             #Goto target tag
             elif tag_id == self.target_id:
+                dist = self.tag_follow(tag_id)
+                if dist > 3.0:
+                    return
+                rospy.loginfo("Found SOI, Task complete.")
+                self.last_detection = rospy.get_time()
                 self.guidance = False
                 self.lost = False
-                self.tag_follow(tag_id)
-                
-
+            
     def comm_callback(self, msg):
         """
         Comm callback to set guidance mode: contol what tags the slave should look for, what mode its in
@@ -74,34 +78,11 @@ class RobotSlave():
 
         if not comm['from_slave'] and self.id == comm['slave_id']:
             if comm['guidance'] == True:
+                # rospy.loginfo_throttle(5.0, f"Slave {self.id} received: {comm}")
                 self.guidance = True
                 self.target_id = comm['target_id']
             else:
                 self.guidance = False
-                self.target_id = None
-
-    def run(self):
-        """
-        Run common loop for slave following master. If it loses track stop moving.
-        """
-        #check time since last detection, if lost, kill velocity commands, send lost message over \comm
-        if rospy.get_time() - self.last_detection > 0.5:
-            self.lost = True
-            rospy.loginfo_throttle(5.0, 'Stopping Slave')
-            self.vel_pub.publish(Twist())
-
-        comm = {
-            'guidance': self.guidance,
-            'from_slave': True,
-            'slave_id': self.id,
-            'targe_id': self.target_id,
-            'lost':  self.lost
-        }
-        str_cmd = String()
-        str_cmd.data = json.dumps(comm)
-        self.comm_pub.publish(str_cmd)
-
-        self.rate.sleep()
 
     def tag_follow(self, tag_id, max_dist_from_tag=10000):
         """
@@ -115,7 +96,7 @@ class RobotSlave():
 
         # Grab tag position relative to robot
         try:
-            trans = self.tfBuffer.lookup_transform(f'{rospy.get_namespace().split("/")[1]}/base_footprint', f'{rospy.get_namespace().split("/")[1]}/tag_{self.master_id:03d}', rospy.Time(0))
+            trans = self.tfBuffer.lookup_transform(f'{rospy.get_namespace().split("/")[1]}/base_footprint', f'{rospy.get_namespace().split("/")[1]}/tag_{tag_id:03d}', rospy.Time(0))
             pos = np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]) 
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
             rospy.logwarn(e)
@@ -126,19 +107,22 @@ class RobotSlave():
         
         # consider the slave to be lost if too far away from master
         if dist > max_dist_from_tag:
+            rospy.loginfo_throttle(f"Master too far: {dist}m")
             self.lost = True
             return
         
-        maxDist = 5
         heading_error = np.arctan2(pos[1], pos[0]) #angle between plane of tag on m and the front plane of slave robot
 
-        if abs(heading_error) < 10*np.pi/180:        #only send linear velocity when within a specified heading
-            vel_cmd.linear.x = self.MAX_lin_VEL * (dist/maxDist)
-        else:
-            #Adjust heading using PID control
-            vel_cmd.angular.z = (heading_error * self.kP) + (self.last_heading_error * self.kD) + (self.error_sum * self.kI)
-            self.last_heading_error = heading_error #previous heading error for derivative control
-            self.error_sum += heading_error #sum of error for integral control
+        # if abs(heading_error) < 15*np.pi/180 and dist > 0.75:        #only send linear velocity when within a specified heading
+        #     vel_cmd.linear.x = self.MAX_lin_VEL *  0.1               #(dist/maxDist)
+        # else:
+
+        vel_cmd.linear.x = self.MAX_lin_VEL *  0.1               #(dist/maxDist)
+
+        #Adjust heading using PID control
+        vel_cmd.angular.z = (heading_error * self.kP) + (self.last_heading_error * self.kD) + (self.error_sum * self.kI)
+        self.last_heading_error = heading_error #previous heading error for derivative control
+        self.error_sum += heading_error #sum of error for integral control
         vel_cmd.linear.y = 0
         vel_cmd.linear.z = 0
 
@@ -146,6 +130,30 @@ class RobotSlave():
         vel_cmd.angular.y = 0
 
         self.vel_pub.publish(vel_cmd)
+        return dist
+
+    def run(self):
+        """
+        Run common loop for slave following master. If it loses track stop moving.
+        """
+        #check time since last detection, if lost, kill velocity commands, send lost message over \comm
+        if rospy.get_time() - self.last_detection > 0.25:
+            self.lost = True
+            rospy.loginfo_throttle(5.0, 'Stopping Slave')
+            self.vel_pub.publish(Twist())
+
+        comm = {
+            'guidance': self.guidance,
+            'from_slave': True,
+            'slave_id': self.id,
+            'target_id': self.target_id,
+            'lost':  self.lost
+        }
+        str_cmd = String()
+        str_cmd.data = json.dumps(comm)
+        self.comm_pub.publish(str_cmd)
+
+        self.rate.sleep()
 
 
 def main():

@@ -33,21 +33,23 @@ class RobotMaster():
             f"tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.target_sub = rospy.Subscriber("/target", String, self.target_callback, queue_size=10)
         self.target_pub = rospy.Publisher("/target", String, queue_size=10)
+        self.follow_sub = rospy.Subscriber("/follow", String, self.follow_callback, queue_size=10)
         
         self.guidance = False
         self.tag_dict = {}
         self.backtrack_mode = False
-        self.rate = rospy.Rate(2)
+        self.hz = 20
+        self.rate = rospy.Rate(self.hz)
         self.last_lost_status = False
-        self.curr_goal_id = rospy.get_param("curr_goal_id", None)
-        self.curr_slave_id = rospy.get_param("curr_slave_id", None)
+        self.curr_goal_id = None
+        self.curr_slave_id = None
         self.sent_goal = False
     
         self.init_x = rospy.get_param("home_x", 2.0)
         self.init_y = rospy.get_param("home_y", 9.0)
         self.init_z = rospy.get_param("home_z", 0.0)
-        self.maxlen = 30
-        self.reset_history()
+        self.maxlen = 60
+        self.tick_count = 0
 
         path = self.rospack.get_path('guide_robot')
         with open(path + '/config/tag_positions.yaml') as f:
@@ -60,7 +62,9 @@ class RobotMaster():
                 p.z = point[2]
 
                 self.tag_dict[tag_id] = p
-        rospy.sleep(1.0)     
+        self.pose_history = None
+        rospy.sleep(1.0)
+        self.reset_history()
 
     def tag_callback(self, msg):
         """
@@ -91,26 +95,34 @@ class RobotMaster():
         rospy.loginfo(f"{sois}")
         sois = [int(i) for i in sois]
         
+        #TODO: make sure doesn't return home, set a flag
         for tag_id in sois:
             self.move_target(tag_id)
 
     def reset_history(self):
-        pose = Pose()
-        pose.position.x = self.init_x
-        pose.position.y = self.init_y
-        pose.position.z = self.init_z
+        """
+        Reset past history of positions to current position.
+        """
+        pose = self.get_position()
         poses = [pose]*self.maxlen
         self.pose_history = deque(poses, maxlen=self.maxlen)
 
     def move_target(self, tag_id, wait=True):
+        """
+        Move to specific target apriltag id.
+
+        Args:
+            tag_id (int): id of apriltag
+            wait (bool): flag that tells function to wait for action result
+        """
         rospy.loginfo("Moving to tag %d" % tag_id)
-        goal_pose = self.tag_dict[tag_id]
+        goal_point = self.tag_dict[tag_id]
         
         # send Nav 2D goal
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.pose.position = goal_pose
+        goal.target_pose.pose.position = goal_point
         goal.target_pose.pose.orientation.w = 1.0
 
         self.action_client.send_goal(goal)
@@ -122,8 +134,22 @@ class RobotMaster():
                 rospy.signal_shutdown("Action server not available!")
             else:
                 status = self.action_client.get_state()
-                if status == GoalStatus.SUCCEEDED:
+                if status == GoalStatus.SUCCEEDED and not self.backtrack_mode:
+                    rospy.loginfo(f"Reached tag{tag_id:03d}")
+
+                    # return to home position
+                    goal = MoveBaseGoal()
+                    home_point = Point(self.init_x, self.init_y, self.init_z)
+                    goal.target_pose.header.frame_id = "map"
+                    goal.target_pose.header.stamp = rospy.Time.now()
+                    goal.target_pose.pose.position = home_point
+                    goal.target_pose.pose.orientation.w = 1.0
+
+                    self.action_client.send_goal(goal)
+                    self.action_client.wait_for_result()
                     self.sent_goal = False
+                    self.curr_slave_id = None
+                    self.curr_goal_id = None
 
     def comm_callback(self, msg):
         """
@@ -135,10 +161,12 @@ class RobotMaster():
         comm = json.loads(msg.data)
 
         if comm['from_slave']:
-            curr_lost_status = comm['lost']
+            curr_lost_status = False  #comm['lost']  # TODO THIS DISABLES BACKTRACKING
+            # rospy.loginfo_throttle_identical(5.0, f"Comm from slave: {comm}")
 
             # Slave was lost, but now now found tag again
             if self.last_lost_status and not curr_lost_status:
+                rospy.loginfo("Slave is not lost anymore")
                 self.reset_history()
                 self.backtrack_mode = False
                 self.sent_goal = False
@@ -155,23 +183,54 @@ class RobotMaster():
                     goal = MoveBaseGoal()
                     goal.target_pose.header.frame_id = "map"
                     goal.target_pose.header.stamp = rospy.Time.now()
-                    goal.target_pose.pose.position = goal_pose
+                    goal.target_pose.pose = goal_pose
+                    goal.target_pose.pose.orientation.w = 1.0
+
 
                     self.action_client.send_goal(goal)
+                    # self.action_client.
                     wait = self.action_client.wait_for_result()
                 else:
                     rospy.logerr_throttle(5.0, "Ran out of points for master to backtrack...")
             
             # save last slave lost status
-            self.last_lost_status = comm['lost']
+            self.last_lost_status = curr_lost_status
+
+    def get_position(self):
+        try:
+            trans = self.tfBuffer.lookup_transform('map', f'{rospy.get_namespace().split("/")[1]}/base_footprint', rospy.Time(0))
+            master_pose = Pose()
+            master_pose.position = Point(trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z)
+            master_pose.orientation = trans.transform.rotation
+            return master_pose
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+            rospy.logwarn(e)
+
+    def follow_callback(self, msg):
+        """
+        Callback for telling master what slaves should follow it and where.
+
+        Args:
+            msg (String): Assigns multiple slave_ids to goal_ids (ex. "0,1 1,2")
+        """
+        pairs = msg.data.split()
+        
+        for p in pairs:
+            slave_id, goal_id = p.split(",")
+            self.curr_goal_id = int(goal_id)
+            self.curr_slave_id = int(slave_id)
+            while self.curr_slave_id is not None and self.curr_goal_id is not None:
+                continue
+        self.curr_goal_id = None
+        self.curr_slave_id = None
 
 
     def run(self):
         """
         Save current position into pose history queue. To be used for backtrack in guidance mode.
         """
-        self.curr_goal_id = rospy.get_param("curr_goal_id", 1)
-        self.curr_slave_id = rospy.get_param("curr_slave_id", 0)
+        if self.pose_history is None:
+            return
 
         # Tell slave to go into guided if slave id and goal id are set
         if self.curr_slave_id is not None and self.curr_goal_id is not None and not self.sent_goal:
@@ -186,22 +245,16 @@ class RobotMaster():
             str_cmd = String()
             str_cmd.data = json.dumps(comm)
             self.comm_pub.publish(str_cmd)
-            # self.move_target(self.curr_goal_id, wait=True)
+            
             self.target_pub.publish(f"{self.curr_goal_id}")
             rospy.loginfo_throttle(5.0, "Sent move to tag: %d" % self.curr_goal_id)
             self.sent_goal = True
 
         #Save the current pose if not in backtrack mode and in guidance mode
-        if not self.backtrack_mode and self.guidance:
-            try:
-                trans = self.tfBuffer.lookup_transform('map', f'{rospy.get_namespace().split("/")[1]}/base_footprint', rospy.Time(0))
-                master_pose = Pose()
-                master_pose.position = Point(trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z)
-                master_pose.orientation = trans.transform.rotation
-                self.pose_history.append(master_pose)
-            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-                rospy.logwarn(e)
-
+        if not self.backtrack_mode and self.guidance and (self.tick_count % self.hz == 0):
+            self.pose_history.append(self.get_position())
+        
+        self.tick_count += 1
         self.rate.sleep()
 
 def main():
