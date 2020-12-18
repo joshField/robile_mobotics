@@ -37,21 +37,65 @@ To support pose to quaternion transforms in RobotMaster.py and RobotSlave.py wit
 pip3 install scipy
 ```
 
-## Running
-
-Send master to target:
-
+## Build
+From the root of this repository run:  
 ``` bash
-rostopic pub /target std_msgs/String "data: '1'"
-```
+catkin build
+```  
 
-Multiple robot following to an SOI:
+## Task 1: SLAM  
+### Run  
+``` bash
+roslaunch guide_robot start.launch slam:=true autonomous:=true
+```  
+### Videos  
+Autonomous SLAM:  
+<img src="docs/gifs/task1_slam.gif" height="300">  
 
+## Task 2: Navigation and SOIs  
+### Run  
+``` bash
+roslaunch guide_robot start.launch
+```  
+Send master to tags 0, 1, and 2:
+``` bash
+rostopic pub /target std_msgs/String "data: '0,1,2'"
+```  
+### Videos
+Move to tag 0, tag 1, and tag 2:  
+<img src="docs/gifs/task2_3_SOIs.gif" height="300">  
+
+## Task 3: Guidance  
+### Run  
+``` bash
+roslaunch guide_robot start.launch
+```  
+Guide slave 0 to tag 0:  
+``` bash
+rostopic pub /follow std_msgs/String "data: '0,0'"
+```  
+### Videos  
+Follow to close tag:  
+<img src="docs/gifs/task3_follow_and_SOI.gif" height="300">  
+Follow to far tag:  
+<img src="docs/gifs/task3_follow_far.gif" height="300">  
+
+## Task 4: Multi-Robot Guidance & Disinfection
+### Run  
+``` bash
+roslaunch guide_robot start.launch multi:=true
+```  
+Guide slave 0 to tag 0 then slave 1 to tag 0:
 ``` bash
 rostopic pub /follow std_msgs/String "data: '0,0 1,0'"
-```
+```  
+### Videos  
+Multi-robot following:  
+<img src="docs/gifs/task4_multi_following.gif" height="300">  
+Cleaning task:  
+<img src="docs/gifs/task4_cleaning_task.gif" height="300">  
 
 ## Resources
-[https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/]()
-[https://aws.amazon.com/blogs/robotics/hospital-world-simulating-robot/](AWS HospitalWorld Blog Post)
-[http://wiki.ros.org/navigation/Tutorials/RobotSetup](move_base params: ROS navigation wiki)
+[Robotis Tutorials](https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/)  
+[AWS HospitalWorld Blog Post](https://aws.amazon.com/blogs/robotics/hospital-world-simulating-robot/)  
+[move_base params: ROS navigation wiki](http://wiki.ros.org/navigation/Tutorials/RobotSetup)

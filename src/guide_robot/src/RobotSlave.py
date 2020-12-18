@@ -71,20 +71,12 @@ class RobotSlave():
                 rospy.loginfo("Found SOI, Task complete.")
                 self.last_detection = rospy.get_time()
                 self.guidance = False
-                self.clean = True
+                
+                if dist < 1.0:
+                    rospy.loginfo("Setting clean to true")
+                    self.clean = True
                 self.lost = False
             
-            #perform cleaning task at SOI
-            elif tag_id == self.target_id and self.clean:
-                rospy.loginfo(f"Slave {self.id} started cleaning at SOI {self.target_id}")
-                self.clean_start = rospy.get_time()
-                self.clean_end   = rospy.get_time()
-                while abs(self.clean_start - self.clean_end) < self.clean_time:
-                    clean()
-                    self.clean_end   = rospy.get_time()
-                self.clean = False
-                rospy.loginfo(f"Slave {self.id} FINISHED cleaning at SOI {self.target_id}")
-
             
     def comm_callback(self, msg):
         """
@@ -151,7 +143,7 @@ class RobotSlave():
         self.vel_pub.publish(vel_cmd)
         return dist
 
-    def clean(self):
+    def perform_clean(self):
         """
         Run cleaning action for slaves once they reach the SOI
         """
@@ -187,6 +179,18 @@ class RobotSlave():
         str_cmd = String()
         str_cmd.data = json.dumps(comm)
         self.comm_pub.publish(str_cmd)
+
+        #perform cleaning task at SOI
+        if self.clean:
+            rospy.loginfo(f"Slave {self.id} started cleaning at SOI {self.target_id}")
+            self.clean_start = rospy.get_time()
+            self.clean_end   = rospy.get_time()
+            while abs(self.clean_start - self.clean_end) < self.clean_time:
+                self.perform_clean()
+                self.clean_end   = rospy.get_time()
+            self.clean = False
+            rospy.loginfo(f"Slave {self.id} FINISHED cleaning at SOI {self.target_id}")
+
 
         self.rate.sleep()
 

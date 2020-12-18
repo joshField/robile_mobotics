@@ -2,6 +2,7 @@
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="robot_m"  default="robot_m"/>
   <arg name="robot_s" default="robot_s"/>
+  <arg name="multi" default="false"/>
 
   <!-- Multi Robot name convention: Number = ID of the given robot type = robot_s(number) or robot_m(number) -->
   <!-- Master robot spawn pose -->
@@ -84,42 +85,45 @@
     <arg name="robot_name" value="$(arg robot_s0_name)"/>
   </include>
   
- <!-- load turtlebot3 slave model 1 -->
-  <!-- <include file="$(find guide_robot)/launch/spawn.launch">
-    <arg name="robot_name" value="$(arg robot_s1_name)"/>
-    <arg name="robot_type" value="$(arg robot_s)"/>
-    <arg name="x" value="$(arg robot_s1_x_pos)"/>
-    <arg name="y" value="$(arg robot_s1_y_pos)"/>
-    <arg name="z" value="$(arg robot_s1_z_pos)"/>
-    <arg name="yaw" value="$(arg robot_s1_yaw)"/>
-  </include>
-  <group ns="$(arg robot_s1_name)">
-    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
-    <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen"> 
-        <param name="id" type="int" value="1"/>
-    </node>
+  <!-- Multi-robot launch -->
+  <group if="$(arg multi)">
+    <!-- load turtlebot3 slave model 1 -->
+    <include file="$(find guide_robot)/launch/spawn.launch">
+      <arg name="robot_name" value="$(arg robot_s1_name)"/>
+      <arg name="robot_type" value="$(arg robot_s)"/>
+      <arg name="x" value="$(arg robot_s1_x_pos)"/>
+      <arg name="y" value="$(arg robot_s1_y_pos)"/>
+      <arg name="z" value="$(arg robot_s1_z_pos)"/>
+      <arg name="yaw" value="$(arg robot_s1_yaw)"/>
+    </include>
+    <group ns="$(arg robot_s1_name)">
+      <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+      <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen"> 
+          <param name="id" type="int" value="1"/>
+      </node>
+    </group>
+    <include file="$(find guide_robot)/launch/april.launch">
+      <arg name="robot_name" value="$(arg robot_s1_name)"/>
+    </include>
+    
+  <!-- load turtlebot3 slave model 2 -->
+    <include file="$(find guide_robot)/launch/spawn.launch">
+      <arg name="robot_name" value="$(arg robot_s2_name)"/>
+      <arg name="robot_type" value="$(arg robot_s)"/>
+      <arg name="x" value="$(arg robot_s2_x_pos)"/>
+      <arg name="y" value="$(arg robot_s2_y_pos)"/>
+      <arg name="z" value="$(arg robot_s2_z_pos)"/>
+      <arg name="yaw" value="$(arg robot_s2_yaw)"/>
+    </include>
+    <group ns="$(arg robot_s2_name)">
+      <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+      <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen">
+        <param name="id" type="int" value="2"/>
+      </node> 
+    </group>
+    <include file="$(find guide_robot)/launch/april.launch">
+      <arg name="robot_name" value="$(arg robot_s2_name)"/>
+    </include>
   </group>
-  <include file="$(find guide_robot)/launch/april.launch">
-    <arg name="robot_name" value="$(arg robot_s1_name)"/>
-  </include> -->
-  
- <!-- load turtlebot3 slave model 2 -->
-  <!-- <include file="$(find guide_robot)/launch/spawn.launch">
-    <arg name="robot_name" value="$(arg robot_s2_name)"/>
-    <arg name="robot_type" value="$(arg robot_s)"/>
-    <arg name="x" value="$(arg robot_s2_x_pos)"/>
-    <arg name="y" value="$(arg robot_s2_y_pos)"/>
-    <arg name="z" value="$(arg robot_s2_z_pos)"/>
-    <arg name="yaw" value="$(arg robot_s2_yaw)"/>
-  </include>
-  <group ns="$(arg robot_s2_name)">
-    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
-    <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen">
-      <param name="id" type="int" value="2"/>
-    </node> 
-  </group>
-  <include file="$(find guide_robot)/launch/april.launch">
-    <arg name="robot_name" value="$(arg robot_s2_name)"/>
-  </include> -->
 
 </launch>

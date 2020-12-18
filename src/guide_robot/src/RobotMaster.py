@@ -50,6 +50,7 @@ class RobotMaster():
         self.init_z = rospy.get_param("home_z", 0.0)
         self.maxlen = 60
         self.tick_count = 0
+        self.return_home = False
 
         path = self.rospack.get_path('guide_robot')
         with open(path + '/config/tag_positions.yaml') as f:
@@ -137,16 +138,17 @@ class RobotMaster():
                 if status == GoalStatus.SUCCEEDED and not self.backtrack_mode:
                     rospy.loginfo(f"Reached tag{tag_id:03d}")
 
-                    # return to home position
-                    goal = MoveBaseGoal()
-                    home_point = Point(self.init_x, self.init_y, self.init_z)
-                    goal.target_pose.header.frame_id = "map"
-                    goal.target_pose.header.stamp = rospy.Time.now()
-                    goal.target_pose.pose.position = home_point
-                    goal.target_pose.pose.orientation.w = 1.0
+                    if self.return_home:
+                        # return to home position
+                        goal = MoveBaseGoal()
+                        home_point = Point(self.init_x, self.init_y, self.init_z)
+                        goal.target_pose.header.frame_id = "map"
+                        goal.target_pose.header.stamp = rospy.Time.now()
+                        goal.target_pose.pose.position = home_point
+                        goal.target_pose.pose.orientation.w = 1.0
 
-                    self.action_client.send_goal(goal)
-                    self.action_client.wait_for_result()
+                        self.action_client.send_goal(goal)
+                        self.action_client.wait_for_result()
                     self.sent_goal = False
                     self.curr_slave_id = None
                     self.curr_goal_id = None
@@ -215,12 +217,14 @@ class RobotMaster():
         """
         pairs = msg.data.split()
         
+        self.return_home = True
         for p in pairs:
             slave_id, goal_id = p.split(",")
             self.curr_goal_id = int(goal_id)
             self.curr_slave_id = int(slave_id)
             while self.curr_slave_id is not None and self.curr_goal_id is not None:
                 continue
+        self.return_home = False
         self.curr_goal_id = None
         self.curr_slave_id = None
 
