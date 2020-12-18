@@ -60,7 +60,7 @@
 
   <!-- Load the slave robot fleet -->
   <!-- load turtlebot3 slave model 0-->
-  <!-- <include file="$(find guide_robot)/launch/spawn.launch">
+  <include file="$(find guide_robot)/launch/spawn.launch">
     <arg name="robot_name" value="$(arg robot_s0_name)"/>
     <arg name="robot_type" value="$(arg robot_s)"/>
     <arg name="x" value="$(arg robot_s0_x_pos)"/>
@@ -82,7 +82,7 @@
   </group>
   <include file="$(find guide_robot)/launch/april.launch">
     <arg name="robot_name" value="$(arg robot_s0_name)"/>
-  </include> -->
+  </include>
   
  <!-- load turtlebot3 slave model 1 -->
   <!-- <include file="$(find guide_robot)/launch/spawn.launch">

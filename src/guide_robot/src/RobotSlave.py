@@ -24,8 +24,14 @@ class RobotSlave():
         self.tag_detections_sub = rospy.Subscriber(
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
+
+
         self.guidance = False
         self.lost = False
+        self.clean = False
+        self.clean_start = rospy.get_time()
+        self.clean_end   = rospy.get_time() 
+        self.clean_time  = 10
         self.target_id = None
         self.MAX_lin_VEL = 1.00                         #set max follow velocity
         self.last_detection = rospy.get_time()
@@ -65,7 +71,20 @@ class RobotSlave():
                 rospy.loginfo("Found SOI, Task complete.")
                 self.last_detection = rospy.get_time()
                 self.guidance = False
+                self.clean = True
                 self.lost = False
+            
+            #perform cleaning task at SOI
+            elif tag_id == self.target_id and self.clean:
+                rospy.loginfo(f"Slave {self.id} started cleaning at SOI {self.target_id}")
+                self.clean_start = rospy.get_time()
+                self.clean_end   = rospy.get_time()
+                while abs(self.clean_start - self.clean_end) < self.clean_time:
+                    clean()
+                    self.clean_end   = rospy.get_time()
+                self.clean = False
+                rospy.loginfo(f"Slave {self.id} FINISHED cleaning at SOI {self.target_id}")
+
             
     def comm_callback(self, msg):
         """
@@ -131,6 +150,22 @@ class RobotSlave():
 
         self.vel_pub.publish(vel_cmd)
         return dist
+
+    def clean(self):
+        """
+        Run cleaning action for slaves once they reach the SOI
+        """
+        vel_cmd = Twist()
+
+        vel_cmd.linear.x = 0
+        vel_cmd.linear.y = 0
+        vel_cmd.linear.z = 0
+
+        vel_cmd.angular.x = 0
+        vel_cmd.angular.y = 0
+        vel_cmd.angular.z = 1
+
+        self.vel_pub.publish(vel_cmd)
 
     def run(self):
         """
