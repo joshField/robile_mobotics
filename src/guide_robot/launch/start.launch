@@ -17,14 +17,6 @@
     <include file="$(find guide_robot)/launch/navigation.launch">
         <arg name="robot_name"  default="$(arg robot_m)"/>
     </include>
-    
-    <!-- Initiate the master/slave nodes -->
-    <!-- <group ns="$(arg robot_m)">
-        <node pkg="guide_robot" name="RobotMaster" type="RobotMaster.py" output="screen" /> 
-    </group> -->
-    <!-- <group ns="$(arg robot_s)">
-        <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen" /> 
-    </group> -->
 
     <!-- Do the rviz things -->
     <node name="rviz" type="rviz" pkg="rviz" args="-d $(find guide_robot)/rviz/full.rviz" />

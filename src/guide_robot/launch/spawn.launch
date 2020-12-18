@@ -1,14 +1,14 @@
 <launch>
-    <arg name="robot_name"  default="robot_name"/>
+    <arg name="robot_name"  default="robot_s"/>
+    <arg name="robot_type" default="robot_s"/>
 
-    # make multiple, add new arg robot_type, needs to replace robot_name in the robot_description param. This arg will also need to be added to other launch files. robot_type can be robot_s or robot_m
     <arg name="x" default=" 0.0"/>
     <arg name="y" default=" 0.0"/>
     <arg name="z" default=" 0.0"/>
     <arg name="yaw"   default=" 0.0"/>
 
     <group ns="$(arg robot_name)">
-        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find guide_robot)/urdf/$(arg robot_name).urdf.xacro namespace:=$(arg robot_name)" />
+        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find guide_robot)/urdf/$(arg robot_type).urdf.xacro namespace:=$(arg robot_name)" />
 
         
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">

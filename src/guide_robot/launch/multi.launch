@@ -3,15 +3,30 @@
   <arg name="robot_m"  default="robot_m"/>
   <arg name="robot_s" default="robot_s"/>
 
-  <arg name="robot_m_x_pos" default=" 0.0"/>
-  <arg name="robot_m_y_pos" default=" 1.0"/>
-  <arg name="robot_m_z_pos" default=" 0.0"/>
-  <arg name="robot_m_yaw"   default=" 0.0"/>
-
-  <arg name="robot_s_x_pos" default=" 0.0"/>
-  <arg name="robot_s_y_pos" default=" 2.0"/>
-  <arg name="robot_s_z_pos" default=" 0.0"/>
-  <arg name="robot_s_yaw"   default=" 0.0"/>
+  <!-- Multi Robot name convention: Number = ID of the given robot type = robot_s(number) or robot_m(number) -->
+  <!-- Master robot spawn pose -->
+  <arg name="robot_m_x_pos" default="2.0"/>
+  <arg name="robot_m_y_pos" default="9.0"/>
+  <arg name="robot_m_z_pos" default="0.0"/>
+  <arg name="robot_m_yaw"   default="0.0"/>
+  <!-- Slave robot 0 spawn pose -->
+  <arg name="robot_s0_name"  default="robot_s0"/>
+  <arg name="robot_s0_x_pos" default="0.0"/>
+  <arg name="robot_s0_y_pos" default="8.0"/>
+  <arg name="robot_s0_z_pos" default="0.0"/>
+  <arg name="robot_s0_yaw"   default="0.0"/>
+  <!-- Slave robot 1 spawn pose -->
+  <arg name="robot_s1_name"  default="robot_s1"/>
+  <arg name="robot_s1_x_pos" default="0.0"/>
+  <arg name="robot_s1_y_pos" default="9.0"/>
+  <arg name="robot_s1_z_pos" default="0.0"/>
+  <arg name="robot_s1_yaw"   default="0.0"/>
+  <!-- Slave robot 2 spawn pose -->
+  <arg name="robot_s2_name"  default="robot_s2"/>
+  <arg name="robot_s2_x_pos" default="0.0"/>
+  <arg name="robot_s2_y_pos" default="10.0"/>
+  <arg name="robot_s2_z_pos" default="0.0"/>
+  <arg name="robot_s2_yaw"   default="0.0"/>
 
   <!-- load hospital world -->
   <include file="$(find guide_robot)/launch/hospital.launch"/>
@@ -19,6 +34,7 @@
   <!-- load turtlebot3 master model -->
   <include file="$(find guide_robot)/launch/spawn.launch">
     <arg name="robot_name" value="$(arg robot_m)"/>
+    <arg name="robot_type" value="$(arg robot_m)"/>
     <arg name="x" value="$(arg robot_m_x_pos)"/>
     <arg name="y" value="$(arg robot_m_y_pos)"/>
     <arg name="z" value="$(arg robot_m_z_pos)"/>
@@ -29,42 +45,75 @@
     <node respawn="true" pkg="joy"
             type="joy_node" name="turtle_joy" >
         <param name="dev" type="string" value="/dev/input/js0" />
-        <param name="deadzone" value="0.12" />
+        <param name="deadzone" value="0.12" /> 
     </node>
-
     <!-- Launch the joy to twist translator -->
     <node name="joy_to_twist" pkg="guide_robot" type="joy_to_twist.py" output="screen"/>
-
-    <!-- Do the april tag thing -->
+    <!-- image compression node -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+    <!-- run robot master node -->
+    <!-- <node pkg="guide_robot" name="RobotMaster" type="RobotMaster.py" output="screen" /> -->
   </group>
   <include file="$(find guide_robot)/launch/april.launch">
     <arg name="robot_name" value="$(arg robot_m)"/>
   </include>
 
-  <!-- load turtlebot3 slave model -->
+  <!-- Load the slave robot fleet -->
+  <!-- load turtlebot3 slave model 0-->
   <include file="$(find guide_robot)/launch/spawn.launch">
-    <arg name="robot_name" value="$(arg robot_s)"/>
-    <arg name="x" value="$(arg robot_s_x_pos)"/>
-    <arg name="y" value="$(arg robot_s_y_pos)"/>
-    <arg name="z" value="$(arg robot_s_z_pos)"/>
-    <arg name="yaw" value="$(arg robot_s_yaw)"/>
+    <arg name="robot_name" value="$(arg robot_s0_name)"/>
+    <arg name="robot_type" value="$(arg robot_s)"/>
+    <arg name="x" value="$(arg robot_s0_x_pos)"/>
+    <arg name="y" value="$(arg robot_s0_y_pos)"/>
+    <arg name="z" value="$(arg robot_s0_z_pos)"/>
+    <arg name="yaw" value="$(arg robot_s0_yaw)"/>
   </include>
-  <group ns="$(arg robot_s)">
+  <group ns="$(arg robot_s0_name)">
     <node respawn="true" pkg="joy"
             type="joy_node" name="turtle_joy" >
         <param name="dev" type="string" value="/dev/input/js1" />
         <param name="deadzone" value="0.12" />
     </node>
-
     <node name="joy_to_twist" pkg="guide_robot" type="joy_to_twist.py" output="screen"/>
-    
-    <!-- Do the april tag thing -->
     <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+    <!-- <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen" />  -->
   </group>
   <include file="$(find guide_robot)/launch/april.launch">
-    <arg name="robot_name" value="$(arg robot_s)"/>
+    <arg name="robot_name" value="$(arg robot_s0_name)"/>
   </include>
-
+  
+ <!-- load turtlebot3 slave model 1 -->
+  <!-- <include file="$(find guide_robot)/launch/spawn.launch">
+    <arg name="robot_name" value="$(arg robot_s1_name)"/>
+    <arg name="robot_type" value="$(arg robot_s)"/>
+    <arg name="x" value="$(arg robot_s1_x_pos)"/>
+    <arg name="y" value="$(arg robot_s1_y_pos)"/>
+    <arg name="z" value="$(arg robot_s1_z_pos)"/>
+    <arg name="yaw" value="$(arg robot_s1_yaw)"/>
+  </include>
+  <group ns="$(arg robot_s1_name)">
+    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+    <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen" /> 
+  </group>
+  <include file="$(find guide_robot)/launch/april.launch">
+    <arg name="robot_name" value="$(arg robot_s1_name)"/>
+  </include> -->
+  
+ <!-- load turtlebot3 slave model 2 -->
+  <!-- <include file="$(find guide_robot)/launch/spawn.launch">
+    <arg name="robot_name" value="$(arg robot_s2_name)"/>
+    <arg name="robot_type" value="$(arg robot_s)"/>
+    <arg name="x" value="$(arg robot_s2_x_pos)"/>
+    <arg name="y" value="$(arg robot_s2_y_pos)"/>
+    <arg name="z" value="$(arg robot_s2_z_pos)"/>
+    <arg name="yaw" value="$(arg robot_s2_yaw)"/>
+  </include>
+  <group ns="$(arg robot_s2_name)">
+    <node name="republish_compressed" type="republish" pkg="image_transport" output="screen" args="raw in:=camera/rgb/image_raw compressed out:=camera/rgb/image" />
+    <node pkg="guide_robot" name="RobotSlave" type="RobotSlave.py" output="screen" /> 
+  </group>
+  <include file="$(find guide_robot)/launch/april.launch">
+    <arg name="robot_name" value="$(arg robot_s2_name)"/>
+  </include> -->
 
 </launch>

@@ -25,9 +25,9 @@ class RobotSlave():
             "tag_detections", AprilTagDetectionArray, self.tag_callback, queue_size=10)
         self.vel_pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
         self.guidance = True
+        self.lost = False
         self.target_id = None
         self.MAX_lin_VEL = 1.00                         #set max follow velocity
-        self.MAX_ang_VEL = 0.5
         self.last_detection = rospy.get_time()
         self.id = 0  # TODO: Implement ROS param for getting this and passing from launch file
         self.kP = 0.5 #PID gains for angular velocity controller
@@ -36,6 +36,7 @@ class RobotSlave():
         self.last_heading_error = 0
         self.error_sum = 0
         self.master_id = 7
+        self.rate = rospy.Rate(20)
 
     def tag_callback(self, msg):
         """
@@ -50,47 +51,21 @@ class RobotSlave():
 
             #Follow tag if its the leader and in guidance mode
             if tag_id == self.master_id and self.guidance:
-                
+                self.lost = False
                 self.last_detection = rospy.get_time()
                 rospy.loginfo_throttle(5.0, "Following Master")
-                vel_cmd = Twist()
+                self.tag_follow(tag_id)
 
-                # Grab tag position relative to robot
-                try:
-                    trans = self.tfBuffer.lookup_transform(f'{rospy.get_namespace().split("/")[1]}/base_footprint', f'{rospy.get_namespace().split("/")[1]}/tag_{self.master_id:03d}', rospy.Time(0))
-                    pos = np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]) 
-                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-                    rospy.logwarn(e)
-                    continue
-                
-                #parse tag position
-                dist = np.linalg.norm(pos)
-                maxDist = 5
-                heading_error = np.arctan2(pos[1], pos[0]) #angle between plane of tag on m and the front plane of slave robot
-
-                if abs(heading_error) < 10*np.pi/180:        #only send linear velocity when within a specified heading
-                    vel_cmd.linear.x = self.MAX_lin_VEL * (dist/maxDist)
-                else:
-                    #Adjust heading using PID control
-                    vel_cmd.angular.z = (heading_error * self.kP) + (self.last_heading_error * self.kD) + (self.error_sum * self.kI)
-                    self.last_heading_error = heading_error #previous heading error for derivative control
-                    self.error_sum += heading_error #sum of error for integral control
-                vel_cmd.linear.y = 0
-                vel_cmd.linear.z = 0
-
-                vel_cmd.angular.x = 0
-                vel_cmd.angular.y = 0
-
-                self.vel_pub.publish(vel_cmd)
-
+            #Goto target tag
             elif tag_id == self.target_id:
                 self.guidance = False
-                #todo: goto target tag
+                self.lost = False
+                self.tag_follow(tag_id)
                 
 
     def comm_callback(self, msg):
         """
-        Comm callback to set guidance mode.
+        Comm callback to set guidance mode: contol what tags the slave should look for, what mode its in
 
         Args:
             msg (String): a dict containing from_slave, guidance, and lost booleans
@@ -103,6 +78,7 @@ class RobotSlave():
                 self.target_id = comm['target_id']
             else:
                 self.guidance = False
+                self.target_id = None
 
     def run(self):
         """
@@ -110,18 +86,59 @@ class RobotSlave():
         """
         #check time since last detection, if lost, kill velocity commands, send lost message over \comm
         if rospy.get_time() - self.last_detection > 0.5:
+            self.lost = True
             rospy.loginfo_throttle(5.0, 'Stopping Slave')
             self.vel_pub.publish(Twist())
-            comm = {
-                'guidance': self.guidance,
-                'from_slave': True,
-                'slave_id': self.id,
-                'targe_id': self.target_id,
-                'lost':  True
-            }
-            str_cmd = String()
-            str_cmd.data = json.dumps(comm)
-            self.comm_pub.publish(str_cmd)
+
+        comm = {
+            'guidance': self.guidance,
+            'from_slave': True,
+            'slave_id': self.id,
+            'targe_id': self.target_id,
+            'lost':  self.lost
+        }
+        str_cmd = String()
+        str_cmd.data = json.dumps(comm)
+        self.comm_pub.publish(str_cmd)
+
+        self.rate.sleep()
+
+    def tag_follow(self, tag_id):
+        """
+        Choose which tag to follow, used for having slave robts switch from following the master tag to the SOI tag.
+
+        Args:
+            tag_id (int): Identity of the tag we want to follow
+        """
+        vel_cmd = Twist()
+
+        # Grab tag position relative to robot
+        try:
+            trans = self.tfBuffer.lookup_transform(f'{rospy.get_namespace().split("/")[1]}/base_footprint', f'{rospy.get_namespace().split("/")[1]}/tag_{self.master_id:03d}', rospy.Time(0))
+            pos = np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]) 
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+            rospy.logwarn(e)
+            return
+        
+        #parse tag position
+        dist = np.linalg.norm(pos)
+        maxDist = 5
+        heading_error = np.arctan2(pos[1], pos[0]) #angle between plane of tag on m and the front plane of slave robot
+
+        if abs(heading_error) < 10*np.pi/180:        #only send linear velocity when within a specified heading
+            vel_cmd.linear.x = self.MAX_lin_VEL * (dist/maxDist)
+        else:
+            #Adjust heading using PID control
+            vel_cmd.angular.z = (heading_error * self.kP) + (self.last_heading_error * self.kD) + (self.error_sum * self.kI)
+            self.last_heading_error = heading_error #previous heading error for derivative control
+            self.error_sum += heading_error #sum of error for integral control
+        vel_cmd.linear.y = 0
+        vel_cmd.linear.z = 0
+
+        vel_cmd.angular.x = 0
+        vel_cmd.angular.y = 0
+
+        self.vel_pub.publish(vel_cmd)
 
 
 def main():
