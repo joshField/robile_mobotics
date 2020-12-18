@@ -86,7 +86,6 @@ class RobotMaster():
         sois = [int(i) for i in sois]
         
         for tag_id in sois:
-            self.move_target(tag_id)
             rospy.loginfo("Moving to tag %d" % tag_id)
             goal_pose = self.tag_dict[tag_id]
             
@@ -142,7 +141,7 @@ class RobotMaster():
                     self.action_client.send_goal(goal)
                     wait = self.action_client.wait_for_result()
                 else:
-                    rospy.logerr("Ran out of points for master to backtrack...")
+                    rospy.logerr_throttle(5.0, "Ran out of points for master to backtrack...")
             
             # save last slave lost status
             self.last_lost_status = comm['lost']
@@ -152,8 +151,8 @@ class RobotMaster():
         """
         Save current position into pose history queue. To be used for backtrack in guidance mode.
         """
-        self.curr_goal_id = rospy.get_param("curr_goal_id", None)
-        self.curr_slave_id = rospy.get_param("curr_slave_id", None)
+        self.curr_goal_id = rospy.get_param("curr_goal_id", 1)
+        self.curr_slave_id = rospy.get_param("curr_slave_id", 0)
 
         # Tell slave to go into guided if slave id and goal id are set
         if self.curr_slave_id is not None and self.curr_goal_id is not None and not self.sent_goal:
@@ -167,7 +166,8 @@ class RobotMaster():
             str_cmd = String()
             str_cmd.data = json.dumps(comm)
             self.comm_pub.publish(str_cmd)
-            self.target_pub.publish(f"{self.curr_goal_id},")
+            rospy.loginfo_throttle(5.0, "Moving to tag: %d" % self.curr_goal_id)
+            self.target_pub.publish(f"{self.curr_goal_id}")
             self.sent_goal = True
 
         #Save the current pose if not in backtrack mode and in guidance mode
