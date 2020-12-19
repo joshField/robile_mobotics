@@ -50,6 +50,10 @@ catkin build
 ``` bash
 roslaunch guide_robot start.launch slam:=true autonomous:=true
 ```  
+Save the map:  
+``` bash
+rosrun map_server map_saver -f src/guide_robot/maps/hospital
+```
 ### Videos  
 Autonomous SLAM:  
 <img src="docs/gifs/task1_slam.gif" height="300">  
