@@ -3,6 +3,8 @@
 EECE 5550 Mobile Robotics  
 Mohammadreza Sharif
 
+[Presentation Slides](https://docs.google.com/presentation/d/1x9Tu-_SV50ZAwUNCYjKCzSsZkwlb8trtLRvWVC54Z8I/edit#slide=id.p)
+
 ## Setup
 
 ```bash
